@@ -42,13 +42,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import Client.ClientThread;
 import Client.MessageListener;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import Thread.ClientThread;
 import Utils.MessageStyle;
 import Utils.Constant.Comand;
 import Utils.Constant.Response;
@@ -333,7 +333,11 @@ public class GroupUI implements ActionListener,MouseListener, MessageListener{
 	public void update(String from, String to, String message) {
 		
 	}
-
+	@Override
+	public void completed(String msg, String header) {
+		// TODO Auto-generated method stub
+		
+	}
 	@Override
 	public void update(StringTokenizer online) {
 		 Vector onlineV = new Vector();
@@ -350,6 +354,11 @@ public class GroupUI implements ActionListener,MouseListener, MessageListener{
 	@Override
 	public void error(String message) {
 		appendMessage("[Error]: "+ message, "Error", Color.RED, Color.RED);	
+	}
+	
+	@Override
+	public void updateProcess(String percent) {
+	
 	}
 
 }

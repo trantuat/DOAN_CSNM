@@ -16,9 +16,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 
+import Thread.ClientThread;
 import Utils.MessageStyle;
 import Utils.Constant.Comand;
-import Client.ClientThread;
 import Client.MessageListener;
 
 public abstract class BaseUI implements MessageListener, ActionListener,MouseListener{
@@ -35,18 +35,21 @@ public abstract class BaseUI implements MessageListener, ActionListener,MouseLis
 	protected MainUI main;
 	protected ClientThread thread;
 	protected String username;
+	protected int port;
 	
 	protected abstract void initialize();
 	protected abstract void initData();
 	
-	public BaseUI(String username,ClientThread thread, MainUI main) {
+	public BaseUI(String username, ClientThread thread, MainUI main, int port) {
 		this.username = username;
 		this.thread = thread;
 		this.main = main;
+		this.port = port;
 		
 		initialize();
 		initData();
 	}
+	
 	
 	/*
 	    System Message
@@ -145,6 +148,12 @@ public abstract class BaseUI implements MessageListener, ActionListener,MouseLis
 		
 	}
 
+	@Override
+	public void completed(String msg, String header) {
+		frame.setTitle("You had logged in as: "+username);
+		appendMyMessage(msg, header);
+		
+	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {

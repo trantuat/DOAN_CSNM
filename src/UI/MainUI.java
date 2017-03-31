@@ -19,11 +19,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import Client.ClientThread;
 import Client.Mode;
 
 import javax.swing.JTextField;
 
+import Thread.ClientThread;
 import Utils.Constant.Comand;
 import Utils.Constant.Response;
 
@@ -71,7 +71,7 @@ public class MainUI implements ActionListener{
             dos.writeUTF(Comand.CMD_LOG_IN+" "+ username);
             DataInputStream in = new DataInputStream(socket.getInputStream());
             if (success(in)) {
-            	thread = new ClientThread(socket);
+            	thread = new ClientThread(socket,port);
 	            new Thread(thread).start();
 	            isConnected = true;
 	            lblUsername.setText("WELCOME TO "+username.toUpperCase());
@@ -203,7 +203,7 @@ public class MainUI implements ActionListener{
 	private void startChat(){
 		switch(mode){
 		   case CHAT:
-			   ChatUI chat = new ChatUI(username, this, thread);
+			   ChatUI chat = new ChatUI(username, port, this, thread);
 			   chat.setVisible(true);
 			   this.setVisible(false);
 			   break;
