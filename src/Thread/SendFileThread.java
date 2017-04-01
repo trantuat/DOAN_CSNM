@@ -69,9 +69,17 @@ public class SendFileThread implements Runnable{
 	                    	to = st.nextToken();
 	                    	length  = st.nextToken();
 	                    	
-	                    	handleSendFile(file_name+" "+from+" "+to+" "+length, from);
+	                    	handleSendFile(file_name+" "+from+" "+to+" "+length, from, to);
 	                        break;
-	                   
+	                    case Comand.CMD_SEND_ERROR:
+	                    	listener.error("Client is not found");
+	                    	break;
+	                    case Comand.CMD_DENY_RECEIVE_FILE:
+	                    	from  = st.nextToken();
+	                     	to = st.nextToken();
+	                    	JOptionPane.showMessageDialog(null, "User was deny your request !", "Notice", JOptionPane.INFORMATION_MESSAGE);
+	                        break;     
+	                  
 	                    default: 
 	                        break;
 	                }
@@ -81,7 +89,7 @@ public class SendFileThread implements Runnable{
 		
 	}
 	
-	 private void handleSendFile(String content, String from) {
+	 private void handleSendFile(String content, String from, String to) {
 	    	/*
 	 		 * Format: CMD_SEND_FILE filename sender receiver 
 	 		 */
@@ -105,8 +113,8 @@ public class SendFileThread implements Runnable{
 		            output.close();
 		            bis.close();
 		            System.out.println("File was sent..!");
-		            listener.completed(file.getName(),from);
-		            
+		            listener.completed(file.getName(),from,to);
+		             
 		     } catch (IOException e1) {
 		        	listener.error("Error close socket send file");
 		        	listener.error(e1.getMessage());

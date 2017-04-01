@@ -45,7 +45,6 @@ public class ReceiveFileThread implements Runnable {
 	public void run() {
 		 try {
                 String data = dis.readUTF();
-                String msg = "";
                 String from = "";
                 String to = "";
                 String length = "";
@@ -82,7 +81,7 @@ public class ReceiveFileThread implements Runnable {
                                 fos.flush();
                                 fos.close();
                                 input.close();
-                                listener.completed(file_name,from);
+                                listener.completed(file_name,from,to);
                                 JOptionPane.showMessageDialog(null, "File was saved at '"+ path +"'");
                                 System.out.println("File was saved: "+ path);
                                
@@ -91,9 +90,9 @@ public class ReceiveFileThread implements Runnable {
                             System.out.println(e.getMessage());
                         }
                         break;
-                    case Comand.CMD_SEND_ERROR:
-                    	listener.error("Client is not found");
-                    	break;
+//                    case Comand.CMD_SEND_ERROR:
+//                    	listener.error("Client is not found");
+//                    	break;
                     default: 
                         break;
                 }

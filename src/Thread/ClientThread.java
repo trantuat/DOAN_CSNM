@@ -18,6 +18,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JOptionPane;
 
+import Client.AudioCallListener;
 import Client.MessageListener;
 import UI.GroupUI;
 import Utils.Constant.Response;
@@ -33,6 +34,7 @@ public class ClientThread implements Runnable{
 	private DataOutputStream dos;
 	private StringTokenizer st;
     private MessageListener listener;
+    private AudioCallListener audioListener;
     private DecimalFormat df = new DecimalFormat("##,#00");
     
 
@@ -49,6 +51,10 @@ public class ClientThread implements Runnable{
     
     public void setListener(MessageListener listener){
     	this.listener = listener;
+    }
+    
+    public void setAudioListener(AudioCallListener listener){
+    	this.audioListener = listener;
     }
     
     public void setPort(int port){
@@ -116,7 +122,7 @@ public class ClientThread implements Runnable{
 	              		   if(confirm == 0){
 	              			   Socket s = new Socket("localhost", port);
 	              			   DataOutputStream out = new DataOutputStream(s.getOutputStream());
-	              			   out.writeUTF(Comand.CMD_REQUEST_RECEIVE_FILE+" "+file_name+" "+from+" "+to+" "+length);
+	              			   out.writeUTF(Comand.CMD_ACCEPT_RECEIVE_FILE+" "+file_name+" "+from+" "+to+" "+length);
 	              			   
 	              			   /*
 	              			    * Start thread receive file
@@ -126,18 +132,34 @@ public class ClientThread implements Runnable{
 	              			   new Thread(thread).start();
 	              			   SoundEffect.FileSharing.stop();
 	              		   }else{
-	              			   sendMessage(Response.DENY, file_name+" "+from+" "+to);
+	              			   sendMessage(Comand.CMD_DENY_RECEIVE_FILE, file_name+" "+from+" "+to);
 	              			   SoundEffect.FileSharing.stop();
 	              		   }
                          break;
 
-                    case Response.DENY:
-                    	JOptionPane.showMessageDialog(null, "File wouldn't be sent, because receiver didn't accept it !", "Notice", JOptionPane.INFORMATION_MESSAGE);
-                        break;               
+                   
+                    case Comand.CMD_REQUEST_AUDIO_CALL:
+                    	/*
+                    	 * Format: CMD_REQUEST_AUDIO_CALL from to
+                    	 */
+                    	
+                    	 SoundEffect.VoiceCallReceive.play();
+                    	 from  = st.nextToken();
+                    	 to = st.nextToken();
+                    	 
+                    	 System.out.println("You will receive a audio call from "+from);
+                    	 audioListener.beginAudioCall(from, to);
+
+                        break;
+                    case Comand.CMD_END_AUDIO_CALL:
+                    	from  = st.nextToken();
+                     	to = st.nextToken();
+                     	System.out.println(Comand.CMD_END_AUDIO_CALL+ " "+from+" "+to);
+		            	audioListener.endAudioCall(from, to);
                     default: 
-                    break;
+                    	break;
                 }
-            }
+        	}
         } catch(IOException e){
                listener.error(e.getMessage());
         }

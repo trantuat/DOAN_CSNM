@@ -8,5 +8,5 @@ public interface MessageListener {
 	public void update(StringTokenizer online);
 	public void error(String message);
 	public void updateProcess(String percent);
-	public void completed(String msg, String header);
+	public void completed(String msg, String from, String to);
 }

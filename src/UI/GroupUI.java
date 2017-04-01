@@ -334,8 +334,7 @@ public class GroupUI implements ActionListener,MouseListener, MessageListener{
 		
 	}
 	@Override
-	public void completed(String msg, String header) {
-		// TODO Auto-generated method stub
+	public void completed(String msg, String from, String to) {
 		
 	}
 	@Override

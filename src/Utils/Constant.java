@@ -14,14 +14,19 @@ public class Constant {
 		public static String CMD_SEND_IMAGE = "send_image";
 		public static String CMD_SEND_ERROR = "send_error";
 		public static String CMD_REQUEST_SEND_FILE = "request_send_file";
-		public static String CMD_REQUEST_RECEIVE_FILE = "request_receive_file";
+		public static String CMD_ACCEPT_RECEIVE_FILE = "accept_receive_file";
+		public static String CMD_DENY_RECEIVE_FILE = "deny_receive_file";
+		
+		public static String CMD_REQUEST_AUDIO_CALL = "request_audio_call";
+		public static String CMD_ACCEPT_AUDIO_CALL = "accept_audio_call";
+		public static String CMD_END_AUDIO_CALL = "end_audio_call";
+		public static String CMD_SEND_AUDIO_CALL = "send_audio_call";
+		public static String CMD_DENY_AUDIO_CALL = "deny_audio_call";
 	}
 	
 	public interface Response {
 		public static String SUCCESS = "success";
 		public static String FAIL = "fail";
-		public static String ACCEPT = "accept";
-		public static String DENY = "deny";
 	}
 
 }

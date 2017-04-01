@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Image;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -26,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
 
+import Client.AudioCallListener;
+import Thread.AudioCallThread;
 import Thread.ClientThread;
 import Thread.SendFileThread;
 import Utils.Constant.Comand;
@@ -46,16 +49,19 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 
-public class ChatUI  extends BaseUI implements ActionListener, DocumentListener {
+public class ChatUI  extends BaseUI implements ActionListener, DocumentListener, AudioCallListener {
 
 	private JButton btnSendFile;
 	private JFileChooser fc = new JFileChooser();
 	private String sendTo;
 	private File file;
 	private boolean isSendFile = false;
+	private JMenu mnSend;
+	private JMenuItem mntmSendFile;
+	private JMenuItem mntmVoiceCall;
+	private JMenuItem mntmVideoCall;
+	private AudioCallUI callui;
 
-	
-	
 	
 	public ChatUI(String username, int port, MainUI main, ClientThread thread) {
 		super(username, thread, main, port);
@@ -68,6 +74,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 	protected void initData(){
 		textFieldUserName.setText("");
 		thread.setListener(this);
+		thread.setAudioListener(this);
 		thread.sendMessage(Comand.CMD_REQUEST_ONLINE, username);
 		btnSend.setEnabled(false);
 		frame.setTitle("You had logged in as: "+username);
@@ -77,7 +84,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 	protected void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		textPane = new JTextPane();
 		JScrollPane scrollPane = new JScrollPane();
@@ -169,11 +176,39 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 		menuBar.add(mnAccount);
 		
 		mntmLogOut = new JMenuItem("Log out");
+		mntmLogOut.setIcon(getIcon("ic_logout.png"));
 		mnAccount.add(mntmLogOut);
 		mntmLogOut.addActionListener(this);
 		
+		mnSend = new JMenu("Advance");
+		menuBar.add(mnSend);
+		
+		mntmSendFile = new JMenuItem("Send File");
+		mntmSendFile.setIcon(getIcon("ic_attach_file.png"));
+		mntmSendFile.addActionListener(this);
+	
+		mnSend.add(mntmSendFile);
+		
+		mntmVoiceCall = new JMenuItem("Voice Call");
+		mntmVoiceCall.setIcon(getIcon("ic_voice_call.png"));
+		mnSend.add(mntmVoiceCall);
+		mntmVoiceCall.addActionListener(this);
+		
+		mntmVideoCall = new JMenuItem("Video Call");
+		mntmVideoCall.setIcon(getIcon("ic_video_call.png"));
+		mnSend.add(mntmVideoCall);
+		mntmVideoCall.addActionListener(this);
+		enableMenuItem(false);
+		
 		frame.getContentPane().setLayout(groupLayout);
 		
+		
+	}
+	
+	private void enableMenuItem(boolean enable){
+		mntmSendFile.setEnabled(enable);
+		mntmVideoCall.setEnabled(enable);
+		mntmVoiceCall.setEnabled(enable);
 	}
 	
 	@Override
@@ -193,7 +228,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 				textFieldMessage.setText("");
 				
 			}
-			if(arg0.getSource() == btnSendFile){
+			if(arg0.getSource() == mntmSendFile){
 				
 				int select = fc.showOpenDialog(null);
 				 if(select == JFileChooser.APPROVE_OPTION){
@@ -202,7 +237,29 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 					 isSendFile = true;	
 				 }
 			}
+			
+			if(arg0.getSource() == mntmVoiceCall){
+				voiceCall();
+			}
 		}
+
+	private void voiceCall() {
+		Socket socket;
+		try {
+			socket = new Socket("localhost",port);
+			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+			AudioCallThread audio = new AudioCallThread(socket);
+			audio.setAudioCallListener(this);
+			new Thread(audio).start();
+			dos.writeUTF(Comand.CMD_REQUEST_AUDIO_CALL+" "+ username+" "+sendTo);
+			callui = new AudioCallUI(socket,username,sendTo,port,audio);
+			callui.setClientThread(thread);
+			callui.setVisible(true);
+			callui.setUICall();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+	}
 
 	private void sendFile() {
 		try {
@@ -232,6 +289,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 			sendTo =  jList.getSelectedValue().toString();
 			textFieldUserName.setText(sendTo);
 			btnSend.setEnabled(true);
+			enableMenuItem(true);
 			
 		}
 		 
@@ -242,6 +300,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 		appendMessage(message, from, Color.MAGENTA, Color.BLUE);
 		textFieldUserName.setText(sendTo);
 		btnSend.setEnabled(true);
+		enableMenuItem(true);
 	}
 
 	@Override
@@ -264,6 +323,33 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener 
 	@Override
 	public void updateProcess(String percent) {
 		frame.setTitle(percent);
+		
+	}
+	
+	private ImageIcon getIcon(String name)
+	{
+		Image img = null;
+		try {
+			img = ImageIO.read(getClass().getResource("/"+name));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    return new ImageIcon(img);
+	}
+
+	@Override
+	public void beginAudioCall(String from, String to) {
+		callui = new AudioCallUI(null,from,to,port);
+		callui.setClientThread(thread);
+		callui.setVisible(true);
+		callui.setUIIncoming();
+		
+	}
+
+	@Override
+	public void endAudioCall(String from, String to) {
+		callui.endCall();
 		
 	}
 

@@ -149,9 +149,13 @@ public abstract class BaseUI implements MessageListener, ActionListener,MouseLis
 	}
 
 	@Override
-	public void completed(String msg, String header) {
+	public void completed(String msg, String from, String to) {
 		frame.setTitle("You had logged in as: "+username);
-		appendMyMessage(msg, header);
+		if(!from.equals(username)){
+			appendMessage(msg, from, Color.MAGENTA, Color.BLUE);
+		}else{
+			appendMyMessage(msg, from);
+		}
 		
 	}
 

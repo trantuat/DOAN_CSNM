@@ -10,8 +10,10 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public enum SoundEffect {
     
-    MessageReceive("/audio/boing.wav", false), //  Ringtone for Chat message receive
-    FileSharing("/audio/alarm.wav", false); //   Ringtone for income file
+    MessageReceive("/audio/msg_incoming.wav", false), //  Ringtone for Chat message receive
+    FileSharing("/audio/incoming_file.wav", true), //   Ringtone for income file
+    VoiceCallReceive("/audio/call_incoming_ringtone.wav", true),//   Ringtone for income voice call
+    VideoCallReceive("/audio/call_incoming_ringtone.wav", true);//   Ringtone for income video call
     private Clip clip;
     private boolean loop;
     
