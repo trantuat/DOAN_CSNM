@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.GroupLayout;
@@ -16,7 +18,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JButton;
+
 import java.awt.Font;
+
 import javax.swing.SwingConstants;
 
 public class LoginUI implements ActionListener{
@@ -66,8 +70,22 @@ public class LoginUI implements ActionListener{
 		frame.setTitle("Log in");
 		frame.getContentPane().setFont(new Font("Yu Gothic UI Semilight", Font.PLAIN, 14));
 		frame.setBounds(100, 100, 450, 300);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.setResizable(false);
+		frame.addWindowListener(
+			    new WindowAdapter() 
+			    {
+			        @Override
+			        public void windowClosing(WindowEvent e) 
+			        {
+			           int confirm = JOptionPane.showConfirmDialog(null, "Are you sure close application.?");
+			   		   if(confirm == 0){
+				   			System.exit(0);
+			   		   }
+			        	
+			        }
+
+			    });
 		
 		JLabel lblNickName = new JLabel("Username : ");
 		lblNickName.setHorizontalAlignment(SwingConstants.LEFT);

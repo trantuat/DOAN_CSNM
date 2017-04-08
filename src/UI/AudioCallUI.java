@@ -23,12 +23,15 @@ import java.net.UnknownHostException;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import Client.AudioCallListener;
+import Client.Method;
 import Client.UpdateTimeListener;
-import Thread.AudioCallReceiveThread;
-import Thread.AudioCallThread;
+import Thread.AudioReceiveThread;
+import Thread.AudioSendThread;
 import Thread.ClientThread;
 import Utils.Constant.Comand;
+import Utils.Constant.Host;
 import Utils.Constant.Response;
+import Utils.Constant;
 import Utils.SoundEffect;
 
 import javax.swing.SwingConstants;
@@ -45,10 +48,13 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 	private JButton btnAccept;
 	private JButton btnDeny;
 	private int port;
-	private AudioCallThread audioCallThread ;
-	private AudioCallReceiveThread audioCallReceiveThread;
+	private AudioSendThread sendThread ;
+	private AudioSendThread sendReplyThread ;
+	private AudioReceiveThread receiveThread;
+	private AudioReceiveThread receiveReplyThread;
 	private ClientThread thread;
 	private JLabel lblTimeCalling;
+	private Method method;
 	
 //	/**
 //	 * Launch the application.
@@ -82,6 +88,10 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 //	public AudioCallUI() {
 //		initialize();
 //	}
+	
+	public void setMethod(Method method){
+		this.method = method;
+	}
 
 	public AudioCallUI(Socket socket ,String from, String to, int port ) {
 		this.socket = socket;
@@ -91,13 +101,13 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 		initialize();
 	}
 	
-	public AudioCallUI(Socket socket ,String from, String to, int port, AudioCallThread audioCallThread ) {
+	public AudioCallUI(Socket socket ,String from, String to, int port, AudioSendThread audioCallThread ) {
 		this.socket = socket;
 		this.from = from;
 		this.to = to;
 		this.port = port;
-		this.audioCallThread = audioCallThread;
-		this.audioCallThread.setTimeListener(this);
+		this.sendThread = audioCallThread;
+		this.sendThread.setTimeListener(this);
 		initialize();
 		
 	}
@@ -116,10 +126,16 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 	}
 	
     public void setUIIncoming(){
-    	lblCalling.setText(to+ " are calling to you");
+    	lblCalling.setText(from+ " are calling to you");
     	btnEndCall.setVisible(false);
 	}
-
+    
+    public void setReceiveReplyThread(AudioReceiveThread receiveReplyThread){
+    	this.receiveReplyThread = receiveReplyThread;
+    }
+    public void setSendReplyThread(AudioSendThread receiveReplyThread){
+    	this.sendReplyThread = sendReplyThread;
+    }
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -192,6 +208,26 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		switch (method) {
+		case VIDEO_CALL:
+			handleVideoCall(e);
+			break;
+
+		case AUDIO_CALL:
+			handleAudioCall(e);
+			break;
+		}
+		
+		
+		
+	}
+	 
+	private void handleVideoCall(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void handleAudioCall(ActionEvent e) {
 		SoundEffect.VoiceCallReceive.stop();
 		if(e.getSource() == btnEndCall){
 			 int confirm = JOptionPane.showConfirmDialog(null, "Are you sure to end your conversation?");
@@ -211,32 +247,46 @@ public class AudioCallUI implements ActionListener,UpdateTimeListener{
 			btnDeny.setVisible(false);
 			btnAccept.setVisible(false);
 			btnEndCall.setVisible(true);
-			begin();
+			accept();
 		}
 		
-		
 	}
-	 
+
 	public void endCall(){
 		SoundEffect.VoiceCallReceive.stop();
 		System.out.println("End call");
-		if (audioCallThread != null) {
-			audioCallThread.endCall();
+		if (sendThread != null) {
+			sendThread.endCall();
 		}
-		if(audioCallReceiveThread != null){
-			audioCallReceiveThread.endCall();
+		if(receiveThread != null){
+			receiveThread.endCall();
+		}
+		if (sendReplyThread != null) {
+			sendReplyThread.endCall();
+		}
+		if(receiveReplyThread != null){
+			receiveReplyThread.endCall();
 		}
 		frame.setVisible(false);
 		frame.dispose();
 	}
-	private void begin() {
+	private void accept() {
 		try {
-			socket = new Socket("localhost", port);
+			//Creat socket receive  audio
+			socket = new Socket(Host.HOST, port);
 			dos = new DataOutputStream(socket.getOutputStream());
 			dos.writeUTF(Comand.CMD_ACCEPT_AUDIO_CALL +" "+from+" "+to);
-			audioCallReceiveThread = new AudioCallReceiveThread(socket);
-			audioCallReceiveThread.setUpdateListener(this);
-			new Thread(audioCallReceiveThread).start();
+			receiveThread = new AudioReceiveThread(socket);
+			receiveThread.setUpdateListener(this);
+			new Thread(receiveThread).start();
+			
+			//Creat socket send audio
+			Socket s = new Socket(Host.HOST, port);
+			sendReplyThread = new AudioSendThread(s);
+			DataOutputStream o = new DataOutputStream(s.getOutputStream());
+			o.writeUTF(Comand.CMD_REPLY_AUDIO_CALL+" "+from+" "+to);
+			new Thread(sendReplyThread).start();
+			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

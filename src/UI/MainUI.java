@@ -25,6 +25,7 @@ import javax.swing.JTextField;
 
 import Thread.ClientThread;
 import Utils.Constant.Comand;
+import Utils.Constant.Host;
 import Utils.Constant.Response;
 
 import javax.swing.JMenuBar;
@@ -66,7 +67,7 @@ public class MainUI implements ActionListener{
 	    this.port = port;
 	    this.username = username;
         try {
-            socket = new Socket("localhost", port);
+            socket = new Socket(Host.HOST, port);
             dos = new DataOutputStream(socket.getOutputStream());
             dos.writeUTF(Comand.CMD_LOG_IN+" "+ username);
             DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -119,7 +120,7 @@ public class MainUI implements ActionListener{
 		frame = new JFrame();
 		
 		frame.setBounds(100, 100, 450, 300);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		ButtonGroup group = new ButtonGroup();
 		
 		rdbtnGroup = new JRadioButton("Join group chat");

@@ -101,7 +101,7 @@ public class GroupUI implements ActionListener,MouseListener, MessageListener{
 	private void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100,527, 359);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		textFieldMessgae = new JTextField();
 		textFieldMessgae.setColumns(10);

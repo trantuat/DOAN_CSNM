@@ -28,10 +28,14 @@ import javax.swing.JButton;
 import javax.swing.JTextPane;
 
 import Client.AudioCallListener;
-import Thread.AudioCallThread;
+import Client.Method;
+import Thread.AudioReceiveThread;
+import Thread.AudioSendThread;
 import Thread.ClientThread;
 import Thread.SendFileThread;
+import Utils.Constant;
 import Utils.Constant.Comand;
+import Utils.Constant.Host;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -241,21 +245,41 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener,
 			if(arg0.getSource() == mntmVoiceCall){
 				voiceCall();
 			}
+			if(arg0.getSource() == mntmVideoCall){
+				videoCall();
+			}
 		}
 
+	private void videoCall() {
+		
+	}
+
 	private void voiceCall() {
-		Socket socket;
+	
 		try {
-			socket = new Socket("localhost",port);
+			//Creat socket send audio
+			Socket socket = new Socket(Host.HOST,port);
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-			AudioCallThread audio = new AudioCallThread(socket);
+			AudioSendThread audio = new AudioSendThread(socket);
 			audio.setAudioCallListener(this);
 			new Thread(audio).start();
+			
 			dos.writeUTF(Comand.CMD_REQUEST_AUDIO_CALL+" "+ username+" "+sendTo);
-			callui = new AudioCallUI(socket,username,sendTo,port,audio);
+			
+			//Creat socket receive reply audio
+			Socket s = new Socket(Host.HOST, port);
+			AudioReceiveThread receiveThread = new AudioReceiveThread(s);
+        	DataOutputStream o = new DataOutputStream(s.getOutputStream());
+        	o.writeUTF(Comand.CMD_REQUEST_REPLY_AUDIO_CALL +" "+username + " "+sendTo );
+        	new Thread(receiveThread).start();
+        	
+    		callui = new AudioCallUI(socket,username,sendTo,port,audio);
+			callui.setMethod(Method.AUDIO_CALL);
 			callui.setClientThread(thread);
+			callui.setReceiveReplyThread(receiveThread);
 			callui.setVisible(true);
 			callui.setUICall();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -263,7 +287,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener,
 
 	private void sendFile() {
 		try {
-			Socket socket = new Socket("localhost",port);
+			Socket socket = new Socket(Host.HOST,port);
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 			SendFileThread sendTh = new SendFileThread(socket, port,file);
 			sendTh.setListener(this);
@@ -341,6 +365,7 @@ public class ChatUI  extends BaseUI implements ActionListener, DocumentListener,
 	@Override
 	public void beginAudioCall(String from, String to) {
 		callui = new AudioCallUI(null,from,to,port);
+		callui.setMethod(Method.AUDIO_CALL);
 		callui.setClientThread(thread);
 		callui.setVisible(true);
 		callui.setUIIncoming();

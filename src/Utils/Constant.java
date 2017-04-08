@@ -1,6 +1,10 @@
 package Utils;
 
 public class Constant {
+
+	public interface Host {
+		public static String HOST = "localhost";
+	}
 	public interface Comand {
 		public static String CMD_LOG_IN = "log_in";
 		public static String CMD_LOG_OUT = "log_out";
@@ -22,11 +26,22 @@ public class Constant {
 		public static String CMD_END_AUDIO_CALL = "end_audio_call";
 		public static String CMD_SEND_AUDIO_CALL = "send_audio_call";
 		public static String CMD_DENY_AUDIO_CALL = "deny_audio_call";
+		public static String CMD_REPLY_AUDIO_CALL = "reply_audio_call";
+		public static String CMD_REQUEST_REPLY_AUDIO_CALL = "request_reply_audio_call";
+		public static String CMD_SEND_REPLY_AUDIO_CALL = "send_reply_audio_call";
+		
+		public static String CMD_REQUEST_VIDEO_CALL = "request_video_call";
+		public static String CMD_ACCEPT_VIDEO_CALL = "accept_video_call";
+		public static String CMD_END_VIDEO_CALL = "end_video_call";
+		public static String CMD_SEND_VIDEO_CALL = "send_video_call";
+		public static String CMD_DENY_VIDEO_CALL = "deny_video_call";
 	}
 	
 	public interface Response {
 		public static String SUCCESS = "success";
 		public static String FAIL = "fail";
 	}
+	
+	
 
 }

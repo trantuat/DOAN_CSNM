@@ -36,11 +36,13 @@ public class ClientThread implements Runnable{
     private MessageListener listener;
     private AudioCallListener audioListener;
     private DecimalFormat df = new DecimalFormat("##,#00");
+    private boolean isRunning = false;
     
 
     public ClientThread(Socket socket, int port){
         this.socket = socket;
         this.port = port;
+        this.isRunning = true;
         try {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
@@ -64,7 +66,7 @@ public class ClientThread implements Runnable{
     @Override
     public void run() {
         try {
-            while(true){
+            while(isRunning){
                 String data = dis.readUTF();
                 String file_name;
                 String msg = "";
@@ -177,6 +179,7 @@ public class ClientThread implements Runnable{
 
     public void stop(){
     	try {
+    		isRunning = false;
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();

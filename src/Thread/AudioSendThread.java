@@ -14,20 +14,24 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
 
+import Utils.Constant;
 import Utils.Constant.Comand;
 import Client.AudioCallListener;
 import Client.UpdateTimeListener;
 
-public class AudioCallThread implements Runnable {
+public class AudioSendThread implements Runnable {
 	private Socket socket = null;
+	private int port;
 	private TargetDataLine microphone = null;
 	private DataOutputStream dos = null;
 	private DataInputStream dis = null;
 	private AudioCallListener listener;
 	private UpdateTimeListener timeListener;
 	private TimeThread timeThread;
+	private AudioReceiveThread receiveThread;
+	
 
-    public AudioCallThread(Socket socket)
+    public AudioSendThread(Socket socket)
     {
           this.socket = socket;
           try {
@@ -52,6 +56,9 @@ public class AudioCallThread implements Runnable {
     	this.timeListener = timeListener;
     }
     
+    public void setPort(int port){
+    	this.port = port;
+    }
     
     public void run()
     {
@@ -67,16 +74,17 @@ public class AudioCallThread implements Runnable {
 		         
 		         switch(CMD){
 		             case Comand.CMD_SEND_AUDIO_CALL:
-		            	 
+		             
+		            	from = st.nextToken();
+			            to = st.nextToken();
+			            
 		            	timeThread = new TimeThread(timeListener);
 		            	new Thread(timeThread).start();
 		            	
-		            	from = st.nextToken();
-		            	to = st.nextToken();
-		            	microphone.start();
+		            	microphone.start();	
 		            	dos.writeUTF(Comand.CMD_SEND_AUDIO_CALL+" "+from+" "+to);
 			    	    int bytesRead = 0;
-			    	    byte[] soundData = new byte[1];
+			    	    byte[] soundData = new byte[1024];
 			    	    output = socket.getOutputStream();
 			    	    System.out.println("Get audio.");
 			    	    while(bytesRead != -1){
@@ -92,6 +100,29 @@ public class AudioCallThread implements Runnable {
 			    	    output.close();
 			    	    
 			    	    break;
+		             case Comand.CMD_SEND_REPLY_AUDIO_CALL:
+		            	    from = st.nextToken();
+				            to = st.nextToken();
+			            	
+				            if(!microphone.isRunning())
+			            		microphone.start();
+			            	dos.writeUTF(Comand.CMD_SEND_REPLY_AUDIO_CALL+" "+from+" "+to);
+				    	    int bytesRead1 = 0;
+				    	    byte[] soundData1 = new byte[1024];
+				    	    output = socket.getOutputStream();
+				    	    System.out.println("Get audio.");
+				    	    while(bytesRead1 != -1){
+				    	        bytesRead = microphone.read(soundData1, 0, soundData1.length);
+				    	        if(bytesRead == 0){
+				    	        	break;
+				    	        }
+				    	    	System.out.println("Send "+bytesRead);
+			    	        	output.write(soundData1, 0, bytesRead);
+				    	    }
+				    	    microphone.close();
+				    	    dos.close();
+				    	    output.close();
+				    	    break;
 		             case Comand.CMD_DENY_AUDIO_CALL:
                     	from  = st.nextToken();
                      	to = st.nextToken();

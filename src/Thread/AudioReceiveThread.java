@@ -15,14 +15,14 @@ import Client.AudioCallListener;
 import Client.UpdateTimeListener;
 import Utils.Constant.Comand;
 
-public class AudioCallReceiveThread implements Runnable{
+public class AudioReceiveThread implements Runnable{
 	private Socket socket = null;
 	private DataInputStream soundIn = null;
 	private SourceDataLine inSpeaker = null;
 	private UpdateTimeListener timeListener;
 	private TimeThread timeThread;
 
-    public AudioCallReceiveThread(Socket socket)
+    public AudioReceiveThread(Socket socket)
     {
     	this.socket = socket;
         try {
@@ -51,12 +51,13 @@ public class AudioCallReceiveThread implements Runnable{
 	         String CMD = st.nextToken();
 	         switch(CMD){
 	             case Comand.CMD_SEND_AUDIO_CALL:
-	            	 
-	            	timeThread = new TimeThread(timeListener);
+            		timeThread = new TimeThread(timeListener);
 	            	new Thread(timeThread).start();
+	            	
+	             case Comand.CMD_SEND_REPLY_AUDIO_CALL:
 	            	 
 			        int bytesRead = 0;
-			        byte[] inSound = new byte[1];
+			        byte[] inSound = new byte[1024];
 			        inSpeaker.start();
 			        InputStream input = socket.getInputStream();
 			        while((bytesRead = input.read(inSound)) > -1){
